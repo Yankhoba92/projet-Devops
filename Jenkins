@@ -1,52 +1,32 @@
-pipeline {
-    agent any
-
-    environment {
-        DOCKER_IMAGE = 'myapp-image'
-        DOCKER_TAG = 'latest'
-        REPO_URL = 'https://github.com/Yankhoba92/projet-Devops.git'
-    }
-
-    stages {
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
+pipeline{  
+  agent any
+  stages {
+    stage("Supprimer le workspace"){
+      steps{
+        deleteDir()
+      }
+    }    
+    stage("checkout SCM"){
+      steps{
+        sh 'git clone https://github.com/Yankhoba92/calculatrice.git'
+      }
+    } 
+    stage("Buid image docker"){
+      steps{
+        script{
+          sh 'docker build -t myimage_nginx .'
+          sh 'docker tag myimage_nginx med:myimage_nginx'
         }
-
-        stage('Checkout SCM') {
-            steps {
-                git url: "${env.REPO_URL}", branch: 'main'
-            }
+    } 
+  }
+  stage("Deploiement application"){
+      steps{
+        script{
+          sh 'docker rm image mynginx'
+          sh 'docker rm -f $(docker ps -a)'
+          sh 'docker run -d --name monapp --hostname monapp -p 8099:80 myimage_nginx'
         }
-
-        stage('Build Docker Image') {
-            steps {
-                script {
-                    def dockerfileContent = """
-                    FROM nginx:latest
-                    RUN apt-get update && apt-get install -y net-tools iproute iputils-ping
-                    COPY . /usr/share/nginx/html
-                    """
-                    writeFile file: 'Dockerfile', text: dockerfileContent
-                }
-                sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
-            }
-        }
-
-        stage('Push Docker Image') {
-            steps {
-                // Si vous avez un registre Docker, vous pouvez pousser l'image ici
-                 sh 'docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} your-docker-repo/${DOCKER_IMAGE}:${DOCKER_TAG}'
-                // sh 'docker push your-docker-repo/${DOCKER_IMAGE}:${DOCKER_TAG}'
-            }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
-        }
-    }
+    } 
+  }
 }
-
+}
