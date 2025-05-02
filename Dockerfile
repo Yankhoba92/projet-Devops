@@ -1,3 +1,3 @@
-FROM nginx:latest
-RUN apt-get update && apt-get install -y net-tools iproute2 iputils-ping
-
+FROM nginx
+RUN apt update && apt install net-tools iproute2 iputils-ping ssh vim -y
+COPY . /usr/share/nginx/html
