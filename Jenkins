@@ -1,37 +1,41 @@
-pipeline{  
-  agent any
- environment{
-    IMG_NAME = 'jenkins'
-    DOCKER_REPO = 'myapp_image'
-  }
-  stages {
-    stage("Supprimer le workspace"){
-      steps{
-        deleteDir()
-      }
-    }    
-    stage("checkout SCM"){
-      steps{
-        sh 'git clone https://github.com/Yankhoba92/projet-Devops.git'
-      }
-    } 
-    stage("Buid image docker"){
-      steps{
-        script{
-          sh "docker build -t ${IMG_NAME} ."
-          sh "docker tag ${IMG_NAME} ${DOCKER_REPO}:${IMG_NAME}"
+pipeline {
+    agent any
+    environment {
+        IMG_NAME = 'jenkins'
+        DOCKER_REPO = 'myapp_image'
+        REPO_DIR = 'projet-Devops'  // Nom du répertoire cloné
+    }
+    stages {
+        stage("Supprimer le workspace") {
+            steps {
+                deleteDir()
+            }
         }
-    } 
-  }
-  stage("Deploiement application"){
-      steps{
-        script{
-         sh "docker stop monapp || true"
-          sh "docker rm monapp || true"
-          sh "docker run -d --name monapp --hostname monapp -p 8599:80 ${IMG_NAME}"
-          sh 'docker exec monapp "ifconfig"'
+        stage("Checkout SCM") {
+            steps {
+                sh 'git clone https://github.com/Yankhoba92/projet-Devops.git'
+            }
         }
-    } 
-  }
-}
+        stage("Build image Docker") {
+            steps {
+                script {
+                    // Changer le répertoire de travail au répertoire cloné
+                    dir("${REPO_DIR}") {
+                        sh "docker build -t ${IMG_NAME} ."
+                        sh "docker tag ${IMG_NAME} ${DOCKER_REPO}:${IMG_NAME}"
+                    }
+                }
+            }
+        }
+        stage("Deploiement application") {
+            steps {
+                script {
+                    sh "docker stop monapp || true"
+                    sh "docker rm monapp || true"
+                    sh "docker run -d --name monapp --hostname monapp -p 8599:80 ${IMG_NAME}"
+                    sh 'docker exec monapp ifconfig'
+                }
+            }
+        }
+    }
 }
