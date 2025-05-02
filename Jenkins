@@ -1,1 +1,52 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'myapp-image'
+        DOCKER_TAG = 'latest'
+        REPO_URL = 'https://github.com/Yankhoba92/projet-Devops.git'
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()
+            }
+        }
+
+        stage('Checkout SCM') {
+            steps {
+                git url: "${env.REPO_URL}", branch: 'main'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    def dockerfileContent = """
+                    FROM nginx:latest
+                    RUN apt-get update && apt-get install -y net-tools iproute iputils-ping
+                    COPY . /usr/share/nginx/html
+                    """
+                    writeFile file: 'Dockerfile', text: dockerfileContent
+                }
+                sh 'docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                // Si vous avez un registre Docker, vous pouvez pousser l'image ici
+                 sh 'docker tag ${DOCKER_IMAGE}:${DOCKER_TAG} your-docker-repo/${DOCKER_IMAGE}:${DOCKER_TAG}'
+                // sh 'docker push your-docker-repo/${DOCKER_IMAGE}:${DOCKER_TAG}'
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
 
