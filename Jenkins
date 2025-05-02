@@ -14,8 +14,8 @@ pipeline{
     stage("Buid image docker"){
       steps{
         script{
-          sh 'docker build -t myimage_nginx .'
-          sh 'docker tag myimage_nginx med:myimage_nginx'
+          sh 'docker build -t myapp_image .'
+          sh 'docker tag myapp_image med:myapp_image'
         }
     } 
   }
@@ -24,7 +24,7 @@ pipeline{
         script{
           sh 'docker rm image mynginx'
           sh 'docker rm -f $(docker ps -a)'
-          sh 'docker run -d --name monapp --hostname monapp -p 8099:80 myimage_nginx'
+          sh 'docker run -d --name monapp --hostname monapp -p 8099:80 myapp_image'
         }
     } 
   }
