@@ -8,7 +8,7 @@ pipeline{
     }    
     stage("checkout SCM"){
       steps{
-        sh 'git clone https://github.com/Yankhoba92/calculatrice.git'
+        sh 'git clone https://github.com/Yankhoba92/projet-Devops.git'
       }
     } 
     stage("Buid image docker"){
